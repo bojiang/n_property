@@ -1,0 +1,19 @@
+- job:
+    name: unittest
+    description: https://github.intra.douban.com/lab/n_property
+    scm:
+      - git:
+          branches:
+            - master
+          skip-tag: True
+          url: https://github.intra.douban.com/lab/n_property.git
+    triggers:
+      - pollscm: '* * * * *'
+    builders:
+      - shell: |
+            make test
+    publishers:
+      - junit:
+          results: unittest.xml
+      - email:
+          recipients: jiangbo@douban.com
