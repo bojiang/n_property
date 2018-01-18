@@ -13,7 +13,8 @@
 </p>
 
 ### 用法1：
-```
+
+```python
 from n_property import n_class, n_property
 
 @n_class
@@ -33,7 +34,8 @@ print [r.subject for r in reviews]  # 触发批量prefetch，第2次 Subject.get
 
 
 ### 用法2 (more pythonic)：
-```
+
+```python
 from n_property import n_class, n_property
 
 @n_class
