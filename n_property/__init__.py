@@ -95,6 +95,9 @@ class n_property(object):
         for inst, r in zip(insts, res):
             inst.__dict__[self.__name__] = r  # 写入对象，替换property
         return obj.__dict__[self.__name__]
+    
+    def __set_name__(self, owner, name):
+        n_class(owner)
 
     report = lambda *args, **kwargs: None
 
