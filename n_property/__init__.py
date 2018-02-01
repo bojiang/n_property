@@ -44,7 +44,7 @@ class n_property(object):
 
     def __call__(self, func):
         if isinstance(func, classmethod):
-            raise NError('Please use @n.getter !!!')
+            raise NError('Please use @[property_name].n_getter !!!')
 
         self._init_func(func)
         return self
