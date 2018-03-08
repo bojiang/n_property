@@ -6,9 +6,8 @@
     n + 1 = 2
 </p>
 <p align="center">
-  <a href="http://qa-ci.intra.douban.com/job/peteris-lab-n_property-master-unittest/">
-    <img src="https://shields.dapps.douban.com/badge/qa-ci/peteris-lab-n_property-master-unittest?label=unittest
-" alt="build status">
+  <a href="https://travis-ci.org/hrmthw/n_property">
+    <img src="https://api.travis-ci.org/hrmthw/n_property.svg?branch=master" alt="build status">
   </a>
 </p>
 
