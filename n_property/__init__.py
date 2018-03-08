@@ -134,7 +134,7 @@ def n_class(cls):
     cls.__new__ = new
     cls.__nc_flag__ = True
 
-    for k, v in cls.__dict__.iteritems():
+    for k, v in cls.__dict__.items():
         if isinstance(v, n_property):
             v.__name__ = k
 

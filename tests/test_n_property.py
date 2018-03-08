@@ -42,8 +42,8 @@ class NClassTestCase(unittest.TestCase):
         qs = [nc.q for nc in ncs]
         self.assertEqual(Called.call_count, 4)
 
-        self.assertEqual(ps, SAMPLE)
-        self.assertEqual(qs, SAMPLE)
+        self.assertListEqual(ps, list(SAMPLE))
+        self.assertListEqual(qs, list(SAMPLE))
         self.assertEqual([n.a for n in ncs], NC.get_qs(ncs))
 
         with self.assertRaises(NError):
@@ -163,7 +163,7 @@ class NClassTestCase(unittest.TestCase):
         ps = [nc.p for nc in ncs]
         self.assertEqual(Called.call_count, 2)
 
-        self.assertEqual(ps, SAMPLE)
+        self.assertListEqual(ps, list(SAMPLE))
 
     def test_n_property_mix(self):
         '''
