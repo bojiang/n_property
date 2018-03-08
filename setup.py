@@ -19,8 +19,10 @@ class PyTest(TestCommand):
 
 setup(
     name='n_property',
-    version='0.0.2',
+    version='0.0.4',
     author='hrmthw,yetone',
+    description='To solve the N+1 problem of @property.',
+    url='https://github.com/hrmthw/n_property',
     packages=find_packages(exclude=['tests.*', 'tests'],),
     test_suite='tests',
     cmdclass={'test': PyTest},
