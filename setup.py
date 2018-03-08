@@ -19,7 +19,7 @@ class PyTest(TestCommand):
 
 setup(
     name='n_property',
-    version='0.0.1',
+    version='0.0.2',
     author='hrmthw,yetone',
     packages=find_packages(exclude=['tests.*', 'tests'],),
     test_suite='tests',
