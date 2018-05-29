@@ -74,7 +74,7 @@ class n_property(object):
             _session = []
             insts = [r() for r in session]
             _session = [r for r, i in zip(session, insts) if i is not None]
-            insts = [i for i in insts if i and self.__name__ not in i.__dict__]
+            insts = [i for i in (insts + [obj]) if i and self.__name__ not in i.__dict__]
             self.sessions[session_key] = _session
 
         if count < 1:
@@ -107,6 +107,10 @@ class n_property(object):
 
 
 def n_class(cls):
+    for k, v in cls.__dict__.items():
+        if isinstance(v, n_property):
+            v.__name__ = k
+
     if hasattr(cls, '__nc_flag__'):
         return cls
 
@@ -133,9 +137,5 @@ def n_class(cls):
 
     cls.__new__ = new
     cls.__nc_flag__ = True
-
-    for k, v in cls.__dict__.items():
-        if isinstance(v, n_property):
-            v.__name__ = k
 
     return cls
