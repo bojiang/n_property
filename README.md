@@ -52,3 +52,6 @@ class Review(object):
 print reviews[0].get_subject(user_id='')  # 第1次 Subject.gets 请求
 print [r.get_subject(user_id='') for r in reviews]  # 触发批量prefetch，第2次 Subject.gets 请求
 ```
+
+
+如果是Python3，则不需要加 `@n_class` 装饰器
