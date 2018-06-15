@@ -11,28 +11,10 @@
   </a>
 </p>
 
-### 用法1：
 
-```python
-from n_property import n_class, n_property
+### 用法：
 
-@n_class
-class Review(object):
-
-    @n_property(fallback=None)
-    def subject(selfs):
-        subject_ids = [self.subject_id for self in selfs]
-        return Subject.gets(subject_ids, filter_none=False)
-
-
-reviews = Review.gets(review_ids)
-
-print reviews[0].subject  # 第1次 Subject.gets 请求
-print [r.subject for r in reviews]  # 触发批量prefetch，第2次 Subject.gets 请求
-```
-
-
-### 用法2 (more pythonic)：
+n_property:
 
 ```python
 from n_property import n_class, n_property
@@ -54,7 +36,7 @@ print reviews[0].subject  # 第1次 Subject.gets 请求
 print [r.subject for r in reviews]  # 触发批量prefetch，第2次 Subject.gets 请求
 ```
 
-n_method:
+n_method (一般预期的 method 具有状态，被cache之后更容易产生不符合预期的情况，请尽量使用n_property):
 
 ```python
 @n_class
