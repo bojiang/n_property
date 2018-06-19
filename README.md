@@ -41,11 +41,13 @@ n_method (一般预期的 method 具有状态，被cache之后更容易产生不
 ```python
 @n_class
 class Review(object):
-    get_subject = n_method(accept_argument=accept_argument(str), fallback=None)
 
-    @get_subject.n_call
+    @n_method(implement='get_subjects')
+    def get_subject(self, user_id=''):
+        return None
+
     @classmethod
-   def get_subjects(cls, insts, user_id=''):
+    def get_subjects(cls, insts, user_id=''):
         subject_ids = [inst.subject_id for inst in insts]
         return Subject.gets(subject_ids, filter_none=False, user_id=user_id)
 
