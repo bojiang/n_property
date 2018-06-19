@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import unittest
-from n_property import n_class, n_method, accept_argument, NError
+from n_property import n_class, n_method, NError
 
 
 class NClassTestCase(unittest.TestCase):
@@ -14,9 +14,10 @@ class NClassTestCase(unittest.TestCase):
             def __repr__(self):
                 return 'NC(a=%s)' % self.a
 
-            p = n_method(accept_argument=accept_argument(int))
+            @n_method(implement='get_ps')
+            def p(self, incr):
+                return
 
-            @p.n_call
             @classmethod
             def get_ps(cls, insts, incr):
                 ids = [self.a for self in insts]
@@ -65,26 +66,12 @@ class NClassTestCase(unittest.TestCase):
                 def __repr__(self):
                     return 'NC2(a=%s)' % self.a
 
-                q = n_method()
+                def q(self, incr):
+                    return
 
-                @q
+                @n_method(implement='get_qs')
                 @classmethod
                 def get_qs(cls, insts, incr):
-                    ids = [self.a for self in insts]
-                    return Called.gets(ids, incr)
-
-        with self.assertRaises(NError):
-
-            @n_class  # noqa pylint: disable=C,W
-            class NC2(object):
-                def __init__(self, a):
-                    self.a = a
-
-                def __repr__(self):
-                    return 'NC3(a=%s)' % self.a
-
-                @n_method
-                def q(insts, incr):
                     ids = [self.a for self in insts]
                     return Called.gets(ids, incr)
 
@@ -98,13 +85,15 @@ class NClassTestCase(unittest.TestCase):
                 def __repr__(self):
                     return 'NC3(a=%s)' % self.a
 
-                q = n_method(accept_argument=accept_argument())
+                @n_method(implement='get_qs')
+                def q(self, incr):
+                    return
 
-                @q
-                @classmethod
-                def get_qs(cls, insts, incr):
+                def get_qs(self, insts, incr):
                     ids = [self.a for self in insts]
                     return Called.gets(ids, incr)
+
+            NC3(100).q(0)
 
         with self.assertRaises(NError):
 
@@ -116,13 +105,15 @@ class NClassTestCase(unittest.TestCase):
                 def __repr__(self):
                     return 'NC4(a=%s)' % self.a
 
-                q = n_method(accept_argument=accept_argument(int, a=object, b=object))
+                @n_method(implement='get_qs')
+                def q(self, incr):
+                    return
 
-                @q
-                @classmethod
                 def get_qs(cls, insts, incr):
                     ids = [self.a for self in insts]
                     return Called.gets(ids, incr)
+
+            NC4(100).q(0)
 
         with self.assertRaises(NError):
 
@@ -134,15 +125,18 @@ class NClassTestCase(unittest.TestCase):
                 def __repr__(self):
                     return 'NC5(a=%s)' % self.a
 
-                q = n_method(accept_argument=accept_argument(a=int, c=int))
+                @n_method
+                def q(self, incr):
+                    return
 
-                @q
-                @classmethod
-                def get_qs(cls, insts, a=1, b=2):
+                def get_qs(cls, insts, incr):
                     ids = [self.a for self in insts]
-                    return Called.gets(ids, a + b)
+                    return Called.gets(ids, incr)
+
+            NC5(100).q(0)
 
     def test_n_method_mismatch(self):
+
         @n_class
         class NC(object):
             def __init__(self, a):
@@ -151,16 +145,18 @@ class NClassTestCase(unittest.TestCase):
             def __repr__(self):
                 return 'NC(a=%s)' % self.a
 
-            s = n_method(accept_argument=accept_argument(incr=int))
+            @n_method(implement='get_ss')
+            def s(self, incr):
+                return
 
-            @s.n_call
             @classmethod
             def get_ss(cls, insts, incr=0):
                 return []
 
-            t = n_method(accept_argument=accept_argument(int), fallback=3)
+            @n_method(implement='get_ts')
+            def t(self, incr):
+                return 3
 
-            @t.n_call
             @classmethod
             def get_ts(cls, insts, incr=0):
                 return Called.gets([0], incr)
@@ -186,7 +182,7 @@ class NClassTestCase(unittest.TestCase):
         self.assertEqual(ss, [None] * len(ss))
         self.assertEqual(ts, [2] + [3] * (len(ts) - 1))
 
-    def test_n_property_sub(self):
+    def test_n_method_sub(self):
         '''
         继承后有效
         '''
@@ -199,9 +195,10 @@ class NClassTestCase(unittest.TestCase):
             def __repr__(self):
                 return 'NC(a=%s)' % self.a
 
-            p = n_method()
+            @n_method(implement='get_ps')
+            def p(self, incr):
+                return
 
-            @p.n_call
             @classmethod
             def get_ps(cls, insts, incr):
                 ids = [self.a for self in insts]
@@ -225,7 +222,7 @@ class NClassTestCase(unittest.TestCase):
 
         self.assertEqual(ps, [(i + 1) for i in SAMPLE])
 
-    def test_n_property_mix(self):
+    def test_n_method_mix(self):
         '''
         一种极端情况，多种对象在同一行被创建，prefetch相互不应影响
         '''
@@ -238,9 +235,10 @@ class NClassTestCase(unittest.TestCase):
             def __repr__(self):
                 return 'NC(a=%s)' % self.a
 
-            p = n_method()
+            @n_method(implement='get_ps')
+            def p(self, incr):
+                return
 
-            @p.n_call
             @classmethod
             def get_ps(cls, insts, incr):
                 ids = [self.a for self in insts]

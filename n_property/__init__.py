@@ -112,44 +112,33 @@ class n_property(object):
         cls.report = func
 
 
-class n_method(object):
-    """解决成本较高的 method 调用的n+1问题
+class NMethod(object):
+    """解决成本较高的 method 调用的 n+1 问题
 
     开发者定义 method 时即定义取得批量结果的方法，使用时正常使用。
     在同一批对象的该 method 被第二次使用时，自动批量预获取同一批对象剩余的 method 的返回值
     注意：
-    - 定义 n_method 时必须保证结果数量与传入的 selfs 数量一致，否则 report error 并返回 fallback 值
-    - 只支持 @[method_name].n_call 用法，不能直接作为装饰器
+    - 定义 n_method 的 implement 时必须保证结果数量与传入的 insts 数量一致，否则 report error 并返回 fallback 值
+    - 请使用装饰器 @n_method
     """
     sessions = {}
     counts = {}
 
-    def __init__(self, fallback=None, accept_argument=None):
-        self.fallback = None
-        self.accept_argument = accept_argument
-        self.func = None
-        self.is_classmethod = False
+    def __init__(self, fallback=None, implement=''):
+        self.fallback = fallback
+        self.implement = implement
 
-        # 不允许直接作为装饰器使用
-        if isinstance(fallback, types.FunctionType):
-            raise NError('Please use @[property_name].n_call !!!')
-        else:
-            self.fallback = fallback
-
-    def _init_func(self, func):
-        self.func = func
+        if not isinstance(self.fallback, types.FunctionType):
+            raise NError('Please use @n_method deecorator !!!')
+        if isinstance(self.fallback, classmethod):
+            raise NError('Please use instance method in @n_method !!!')
+        if not isinstance(self.implement, str) or not self.implement:
+            raise NError('Please use str as implement !!!')
 
     def __get__(self, obj, objtype=None):
         if obj is None:
-            return self.func
+            return getattr(objtype, self.implement)
         return partial(self, obj)
-
-    def n_call(self, func):
-        self.is_classmethod = True
-        if isinstance(func, classmethod):
-            self._init_func(func.__func__)
-            return func
-        return classmethod(func)
 
     def _get_obj_cache(self, obj, key):
         try:
@@ -170,23 +159,21 @@ class n_method(object):
 
     def __call__(self, *args, **kwargs):
         obj = args[0]
-        if isinstance(obj, classmethod):
-            raise NError('Please use @[property_name].n_call !!!')
-        if (
-            callable(self.accept_argument) and
-            not self.accept_argument(*args[1:], **kwargs)
+        implement = getattr(obj.__class__, self.implement)
+        if not (
+            inspect.ismethod(implement) and
+            implement.__self__ is obj.__class__
         ):
-            raise NError(
-                'Argument not accepted: args=%s, kwargs=%s !!!' % (args[1:], kwargs))
+            raise NError('Please use classmethod for implement !!!')
 
-        key = (self.func, HashableList(args[1:]), HashableDict(kwargs))
+        key = (self.fallback, HashableList(args[1:]), HashableDict(kwargs))
         val = self._get_obj_cache(obj, key)
         if val is not _missing:
             return val
 
         frame_id = obj._nc_frame_id
         session_key = (type(obj), frame_id)
-        count_key = (frame_id, self.func.__name__)
+        count_key = (frame_id, self.fallback.__name__)
 
         session = self.sessions.get(session_key)
         count = self.counts.get(count_key, 0)
@@ -204,10 +191,11 @@ class n_method(object):
         if count < 1:
             insts = [obj]
 
-        res = self.func(obj.__class__, insts, *args[1:], **kwargs)
+        res = implement(insts, *args[1:], **kwargs)
+        fallback_res = self.fallback(*args, **kwargs)
         if len(res) != len(insts):
-            self.report(msg='n_method length mismatch: %s' % self.fallback, level=logging.ERROR)
-            res = [self.fallback] * len(insts)  # 数量不一致直接提供默认值
+            self.report(msg='n_method length mismatch: %s' % fallback_res, level=logging.ERROR)
+            res = [fallback_res] * len(insts)  # 数量不一致直接提供默认值
 
         if len(insts) > 1:
             self.counts.pop(count_key, None)
@@ -215,28 +203,14 @@ class n_method(object):
         for inst, r in zip(insts, res):
             self._set_obj_cache(inst, key, r)
         val = self._get_obj_cache(obj, key)
-        return val if val is not _missing else self.fallback
+        return val if val is not _missing else fallback_res
 
     def report(self, msg='', level=logging.INFO, *args, **kwargs):
         logging.log(level, msg)
 
 
-def accept_argument(*argstypes, **kwargstypes):
-
-    def checker(*args, **kwargs):
-        if len(args) > len(argstypes):
-            return False
-        argspairs = zip(args, argstypes)
-        for k,v in kwargs.items():
-            if k not in kwargstypes:
-                return False
-            argspairs.append((v, kwargstypes[k]))
-        for param, expected in argspairs:
-            if not isinstance(param, expected):
-                return False
-        return True
-
-    return checker
+def n_method(implement):
+    return partial(NMethod, implement=implement)
 
 
 def n_class(cls):
@@ -265,9 +239,9 @@ def n_class(cls):
         if n_property.sessions.get(session_key) is None:
             n_property.sessions[session_key] = []
         n_property.sessions[session_key].append(ref)
-        if n_method.sessions.get(session_key) is None:
-            n_method.sessions[session_key] = []
-        n_method.sessions[session_key].append(ref)
+        if NMethod.sessions.get(session_key) is None:
+            NMethod.sessions[session_key] = []
+        NMethod.sessions[session_key].append(ref)
 
         return inst
 
