@@ -75,7 +75,7 @@ class n_property(object):
         self.counts[count_key] = count + 1
 
         if not session:
-            insts = [obj]
+            insts = []
         else:
             _session = []
             insts = [r() for r in session]
@@ -85,6 +85,8 @@ class n_property(object):
 
         if count < 1:
             insts = [obj]
+        elif obj not in insts:
+            insts += [obj]
 
         if self.is_classmethod:
             res = self.func(obj.__class__, insts)
