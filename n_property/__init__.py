@@ -1,10 +1,12 @@
 # encoding: utf-8
+import os
 import inspect
 import weakref
 import sys
 import types
 import logging
 from functools import partial, wraps
+from collections import OrderedDict
 
 from .utils import HashableList, HashableDict
 
@@ -12,10 +14,44 @@ from .utils import HashableList, HashableDict
 _missing = object()
 
 
-def get_frame_id(depth=1):
-    frame = sys._getframe(depth)
-    r = "%s:%s:%s" % (frame.f_code.co_filename, frame.f_lineno, frame.f_code.co_name)  # noqa pylint: disable=C,W
-    return r
+def get_frame_chain_id(start_depth=1):
+    depth = start_depth
+
+    frames = OrderedDict()
+
+    while True:
+        try:
+            frame = sys._getframe(depth)
+        except ValueError:
+            break
+        depth += 1
+        name = frame.f_globals.get('__name__')
+        if name is None:
+            break
+        if name == 'wow':
+            continue
+        frames.setdefault(frame.f_code.co_filename, []).append(frame)
+
+    in_test = os.environ.get('env') == 'wow_test'
+    is_popped = False
+
+    pieces = []
+    for name, frames in frames.items():
+
+        if in_test and not is_popped:
+            frames.pop()
+            is_popped = True
+
+        pieces.append(
+            '{}:{}'.format(
+                name,
+                '<-'.join(
+                    str(f.f_lineno) for f in frames
+                )
+            )
+        )
+
+    return '|'.join(pieces)
 
 
 class NError(Exception):
@@ -234,7 +270,7 @@ def n_class(cls):
         else:
             inst = old_new(_cls, *args, **kwargs)
 
-        frame_id = get_frame_id(2)
+        frame_id = get_frame_chain_id()
         inst._nc_frame_id = frame_id
         ref = weakref.ref(inst)
         session_key = (_cls, frame_id)
