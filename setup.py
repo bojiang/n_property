@@ -19,7 +19,7 @@ class PyTest(TestCommand):
 
 setup(
     name='n_property',
-    version='0.0.6',
+    version='0.0.7',
     author='hrmthw,yetone',
     description='To solve the N+1 problem of @property and more.',
     url='https://github.com/hrmthw/n_property',
