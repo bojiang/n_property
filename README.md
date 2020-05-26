@@ -6,8 +6,8 @@
     n + 1 = 2
 </p>
 <p align="center">
-  <a href="https://travis-ci.org/hrmthw/n_property">
-    <img src="https://api.travis-ci.org/hrmthw/n_property.svg?branch=master" alt="build status">
+  <a href="https://travis-ci.org/bojiang/n_property">
+    <img src="https://api.travis-ci.org/bojiang/n_property.svg?branch=master" alt="build status">
   </a>
 </p>
 
